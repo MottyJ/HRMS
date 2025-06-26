@@ -3,7 +3,6 @@ import { DataSource } from 'typeorm';
 import { HeartRateReading } from 'src/heart-rate-readings/entities/heart-rate-reading.entity';
 import { Patient } from 'src/patients/entities/patient.entity';
 
-
 async function ensureDatabaseExists(): Promise<void> {
   const admin = new Client({
     host: process.env.DB_HOST || 'localhost',
@@ -26,7 +25,6 @@ async function ensureDatabaseExists(): Promise<void> {
 
   await admin.end();
 }
-
 
 async function ensureSequenceExists(): Promise<void> {
   const client = new Client({
@@ -74,7 +72,6 @@ async function runSeed(): Promise<void> {
   });
 
   await dataSource.initialize();
-
   await ensureSequenceExists();
 
   await dataSource.synchronize();
@@ -84,6 +81,13 @@ async function runSeed(): Promise<void> {
     { id: '1', name: 'Alice Johnson', age: 34, gender: 'female' },
     { id: '2', name: 'Bob Smith', age: 45, gender: 'male' },
   ]);
+
+  await dataSource.query(`
+    SELECT setval(
+      'patients_id_seq',
+      (SELECT MAX((id)::bigint) FROM "patient")
+    );
+  `);
 
   const hrRepo = dataSource.getRepository(HeartRateReading);
   await hrRepo.save([
