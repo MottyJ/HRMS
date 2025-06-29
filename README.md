@@ -66,7 +66,7 @@ All under `/patients/:id/heart-rate-readings`:
 - Heart rate readings are append-only
 - Global validation pipe + CORS enabled
 
-## Testing
+## Testing (Only the default tests which Nest auto-generates are currently implemented)
 
 ```bash
 npm run test        # Unit tests
