@@ -72,6 +72,7 @@ async function runSeed(): Promise<void> {
   });
 
   await dataSource.initialize();
+  
   await ensureSequenceExists();
 
   await dataSource.synchronize();

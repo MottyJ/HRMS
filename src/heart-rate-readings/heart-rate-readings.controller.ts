@@ -25,7 +25,7 @@ export class HeartRateReadingsController {
   }
 
   @UseInterceptors(RequestCountInterceptor)
-  @Get(':id')
+  @Get()
   findAll(@Param('id') patientId: string) {
     return this.heartRateReadingsService.findAll(patientId);
   }

@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { Redis } from 'ioredis';
+import { Observable } from 'rxjs';
 import { REDIS_CLIENT } from 'src/redis/redis.module';
 
 @Injectable()
@@ -15,14 +16,27 @@ export class RequestCountInterceptor implements NestInterceptor {
 
   constructor(@Inject(REDIS_CLIENT) private readonly redis: Redis) {}
 
-  async intercept(ctx: ExecutionContext, next: CallHandler) {
+  async intercept(
+    ctx: ExecutionContext,
+    next: CallHandler,
+  ): Promise<Observable<any>> {
     const req = ctx.switchToHttp().getRequest<{ params: { id: string } }>();
     const id = req.params.id;
+
     if (id) {
-      this.logger.log(`incrementing counter for ${id}`);
-      await this.redis.incr(`patient:request_count:${id}`);
-      const newVal = await this.redis.get(`patient:request_count:${id}`);
-      this.logger.log(`counter for ${id} now = ${newVal}`);
+      await this.redis.incr(`patient:request_count:${id}`).catch((error) => {
+        if (error instanceof Error) {
+          this.logger.error(
+            `Failed to track request for patient ${id}`,
+            error.stack,
+          );
+        } else {
+          this.logger.error(
+            `Failed to track request for patient ${id}`,
+            String(error),
+          );
+        }
+      });
     }
     return next.handle();
   }
